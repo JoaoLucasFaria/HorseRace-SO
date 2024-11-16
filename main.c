@@ -1,45 +1,7 @@
+#include "threadrace.h"
 #include <stdio.h>
 #include <stdlib.h>
-#include <pthread.h>
-#include <unistd.h>
 #include <time.h>
-
-#define DISTANCIA 100
-
-typedef struct {
-    int id;
-    int posicao;
-} Cavalo;
-
-// Variáveis globais
-int corrida_finalizada = 0;
-pthread_mutex_t mutex;
-int vencedor = -1;
-
-void *correr(void *arg) {
-    Cavalo *cavalo = (Cavalo *)arg;
-    while (!corrida_finalizada) {
-        cavalo->posicao += rand() % 10 + 1;
-
-        pthread_mutex_lock(&mutex);
-        if (!corrida_finalizada) {
-            printf("Cavalo %d está na posição %d\n", cavalo->id, cavalo->posicao);
-        }
-        pthread_mutex_unlock(&mutex);
-
-        if (cavalo->posicao >= DISTANCIA && !corrida_finalizada) {
-            corrida_finalizada = 1;
-            vencedor = cavalo->id;
-            pthread_mutex_lock(&mutex);
-            printf("Cavalo %d venceu a corrida!\n", cavalo->id);
-            pthread_mutex_unlock(&mutex);
-            pthread_exit(NULL);
-        }
-
-        usleep(100000);
-    }
-    return NULL;
-}
 
 int main() {
     int continuar = 1;
@@ -47,15 +9,17 @@ int main() {
     while (continuar) {
         pthread_mutex_init(&mutex, NULL);
         srand(time(NULL));
-        int pontos = 3;  // Pontos iniciais
+        int pontos = 3; //Quantidade de pontos iniciais
         int dificuldade, num_apostas, cavalo_apostado[3], aposta_por_cavalo[3];
         int vitorias_consecutivas = 0;
 
-        printf("Bem-vindo ao jogo de corrida de cavalos!\n");
+        
+        printf("Bem-vindo ao jogo de corrida de cavalos!\n\n");
+        printf("!!!Para vencer, o jogador deve atingir o limite mínimo de 10 pontos!!!\n\n");
         printf("Escolha a dificuldade:\n");
-        printf("1. Fácil (3 cavalos, aposta em 1 cavalo)\n");
-        printf("2. Médio (5 cavalos, aposta em até 2 cavalos)\n");
-        printf("3. Difícil (7 cavalos, aposta em até 3 cavalos)\n");
+        printf("1. Jogo com 3 cavalos, aposta em 1 cavalo\n");
+        printf("2. Jogo com 5 cavalos, aposta em até 2 cavalos\n");
+        printf("3. Jogo com 7 cavalos, aposta em até 3 cavalos\n");
         printf("Sua escolha: ");
         scanf("%d", &dificuldade);
 
@@ -119,15 +83,9 @@ int main() {
                     printf("Você não tem mais pontos para apostar. A corrida começará agora.\n");
                     break;
                 }
-                
-                if (apostas_feitas == max_apostas) {
-                    printf("Número máximo de apostas feitas\n");
-                    break;
-                }
 
-                // Pergunta se deseja continuar apostando
                 int continuar_apostando;
-                printf("Continuar Apostando? 1 para Sim e 0 para Não (máximo de 3 apostas): ");
+                printf("Continuar Apostando? 1 para Sim e 0 para Não (máximo de %d apostas): ", max_apostas);
                 scanf("%d", &continuar_apostando);
 
                 if (continuar_apostando == 0 || apostas_feitas == max_apostas) {
@@ -151,7 +109,7 @@ int main() {
             int ganhou = 0;
             for (int i = 0; i < apostas_feitas; i++) {
                 if (vencedor == cavalo_apostado[i]) {
-                    pontos += 2*aposta_por_cavalo[i];
+                    pontos += 2 * aposta_por_cavalo[i];
                     printf("Parabéns! Você venceu a aposta no cavalo %d e ganhou %d pontos!\n", cavalo_apostado[i], aposta_por_cavalo[i]);
                     ganhou = 1;
                 }
@@ -176,15 +134,12 @@ int main() {
 
         if (pontos >= 10) {
             printf("\nParabéns! Você atingiu 10 pontos e venceu o jogo!\n");
-            printf("\nJogar Novamente? 0 para não e 1 para reiniciar: ");
-            scanf("%d", &continuar);
         } else {
             printf("\nVocê perdeu todos os seus pontos. Fim de jogo!\n");
-            printf("\nJogar Novamente? 0 para não e 1 para reiniciar: ");
-            scanf("%d", &continuar);
         }
+        printf("\nJogar Novamente? 0 para não e 1 para reiniciar: ");
+        scanf("%d", &continuar);
 
-        system("clear");
         pthread_mutex_destroy(&mutex);
     }
 
