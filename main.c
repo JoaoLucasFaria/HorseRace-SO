@@ -134,11 +134,14 @@ int main() {
 
         if (pontos >= 10) {
             printf("\nParabéns! Você atingiu 10 pontos e venceu o jogo!\n");
+            printf("\nJogar Novamente? 0 para não e 1 para reiniciar: ");
+            scanf("%d", &continuar);    
         } else {
             printf("\nVocê perdeu todos os seus pontos. Fim de jogo!\n");
+            printf("\nJogar Novamente? 0 para não e 1 para reiniciar: ");
+            scanf("%d", &continuar);
         }
-        printf("\nJogar Novamente? 0 para não e 1 para reiniciar: ");
-        scanf("%d", &continuar);
+
 
         pthread_mutex_destroy(&mutex);
     }
